@@ -1,5 +1,6 @@
 import Image from '../models/image.js';
 import { uploadToCloudinary } from '../helpers/cloudinaryHelper.js';
+import fs from 'fs';
 
 export const updloadImageController = async(req, res) => {
     try {
@@ -21,6 +22,9 @@ export const updloadImageController = async(req, res) => {
         });
 
         await newlyUploadedImage.save();
+
+        //delete the image from local storage
+        fs.unlinkSync(req.file.path);
         
         res.status(201).json({
             success: true, 
@@ -36,3 +40,22 @@ export const updloadImageController = async(req, res) => {
         });
     }
 };
+
+export const fetctImageController = async(req, res)=>{
+    try {
+        const images = await Image.find({});
+
+        if(images){
+            res. status(200).json({
+                success: true, 
+                data: images
+            })
+        }
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            success: false, 
+            message: "Something went wrong! Please try again"
+        });
+    }
+}
