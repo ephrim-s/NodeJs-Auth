@@ -1,6 +1,7 @@
 import Image from '../models/image.js';
 import { uploadToCloudinary } from '../helpers/cloudinaryHelper.js';
 import fs from 'fs';
+import cloudinary from '../config/cloudinary.js';
 
 export const updloadImageController = async(req, res) => {
     try {
@@ -53,6 +54,45 @@ export const fetctImageController = async(req, res)=>{
         }
     } catch (error) {
         console.log(error);
+        res.status(500).json({
+            success: false, 
+            message: "Something went wrong! Please try again"
+        });
+    }
+}
+
+export const deleteImageController = async (req, res) => {
+    try {
+         const getCurrentImageId = req.params.id;
+         const userId = req.userInfo.userId;
+
+         const image = await Image.findById(getCurrentImageId);
+         if(!image){
+            return res.status(404).json({
+                success: false,
+                message : "Image not found"
+            });
+         }
+
+         //check if this image is uploated by the current user trying to delete the image
+         if(image.uploadedBy.toString() !== userId){
+            return res.status(403).json({
+                success: false,
+                message : "You are not authorized to delete ths image"
+            });
+         }
+
+         //delete this image first from your cloudinary storage
+         await cloudinary.uploader.destroy(image.publicId);
+
+         //delete this image from mongo database
+         await image.findByIdAndDelete(getCurrentImageId);
+
+         res.status(200).json({
+            success: true,
+            message: 'Image deleted successfully'
+         });
+    } catch (error) {
         res.status(500).json({
             success: false, 
             message: "Something went wrong! Please try again"
