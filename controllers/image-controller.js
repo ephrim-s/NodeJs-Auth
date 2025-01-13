@@ -47,11 +47,11 @@ export const fetctImageController = async(req, res)=>{
         //sort number of images to disply per screen scroll
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 5;
-        const skip = (page -1) * limit;
+        const skip = (page - 1) * limit;
 
         const sortBy = req.query.sortBy || 'createdAt';
         const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
-        const totalImages = await Image.find({});
+        const totalImages = await Image.countDocuments();
         const totalPages = Math.ceil(totalImages / limit);
 
         const sortObj = {};
