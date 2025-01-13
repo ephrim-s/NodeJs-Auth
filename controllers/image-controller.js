@@ -44,11 +44,27 @@ export const updloadImageController = async(req, res) => {
 
 export const fetctImageController = async(req, res)=>{
     try {
-        const images = await Image.find({});
+        //sort number of images to disply per screen scroll
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 5;
+        const skip = (page -1) * limit;
+
+        const sortBy = req.query.sortBy || 'createdAt';
+        const sortOrder = req.query.sortOrder === 'asc' ? 1 : -1;
+        const totalImages = await Image.find({});
+        const totalPages = Math.ceil(totalImages / limit);
+
+        const sortObj = {};
+        sortObj[sortBy] = sortOrder;
+
+        const images = await Image.find().sort(sortObj).skip(skip).limit(limit);
 
         if(images){
             res. status(200).json({
                 success: true, 
+                currentPage: page,
+                totalPages: totalPages,
+                totalImages: totalImages,
                 data: images
             })
         }
